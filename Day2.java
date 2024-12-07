@@ -8,35 +8,49 @@ class Day2 {
         ArrayList<ArrayList<Integer>> table = loadInputFile();
         int safeCount = 0;
         for (int i = 0; i < table.size(); i++) {
-            boolean safe = true;
             ArrayList<Integer> row = table.get(i);
 
-            // Check if decreasing
-            boolean isDecreasing = row.get(0) > row.get(1);
+            // First check if safe without dampening
+            if (isSequenceSafe(row)) {
+                safeCount++;
+                continue;
+            }
 
-            for (int j = 1; j < row.size(); j++) {
-                int diff = Math.abs(row.get(j) - row.get(j - 1));
-
-                // Check if difference is between 1 and 3
-                if (diff < 1 || diff > 3) {
-                    safe = false;
-                    break;
+            // Try removing each number one at a time
+            for (int skip = 0; skip < row.size(); skip++) {
+                ArrayList<Integer> dampened = new ArrayList<>();
+                for (int j = 0; j < row.size(); j++) {
+                    if (j != skip) {
+                        dampened.add(row.get(j));
+                    }
                 }
 
-                // Check if consistently increasing or decreasing
-                if (isDecreasing && row.get(j - 1) <= row.get(j)) {
-                    safe = false;
-                    break;
-                }
-                if (!isDecreasing && row.get(j - 1) >= row.get(j)) {
-                    safe = false;
+                if (isSequenceSafe(dampened)) {
+                    safeCount++;
                     break;
                 }
             }
-
-            safeCount += safe ? 1 : 0;
         }
         System.out.println("Safe Count: " + safeCount);
+    }
+
+    private static boolean isSequenceSafe(ArrayList<Integer> sequence) {
+        if (sequence.size() < 2)
+            return true;
+        boolean isDecreasing = sequence.get(0) > sequence.get(1);
+
+        for (int i = 1; i < sequence.size(); i++) {
+            int diff = Math.abs(sequence.get(i) - sequence.get(i - 1));
+
+            if (diff < 1 || diff > 3)
+                return false;
+
+            if (isDecreasing && sequence.get(i - 1) <= sequence.get(i))
+                return false;
+            if (!isDecreasing && sequence.get(i - 1) >= sequence.get(i))
+                return false;
+        }
+        return true;
     }
 
     private static ArrayList<ArrayList<Integer>> loadInputFile() throws FileNotFoundException {
